@@ -1,0 +1,12 @@
+安装说明与第三方许可
+
+本安装包包含 CloudMeet 桌面客户端、私有 OpenVPN 运行库及签名的 Wintun 网络适配器组件。不会安装 OpenVPN GUI，也不会创建其快捷方式。安装系统服务及部署驱动需要管理员授权。
+
+OpenVPN Community 使用 GPL 及相关依赖许可证；Wintun 使用其随附许可证。完整许可证随组件提供。项目、源代码及许可信息：
+https://github.com/OpenVPN/openvpn
+https://openvpn.net/community/
+https://www.wintun.net/
+
+VPN 按目标 IP 分流，对访问指定 IP 的所有应用生效，并非仅限 CloudMeet。断开后不提供断网保护（kill switch）。
+
+卸载此集成包会移除 CloudMeet 的私有 VPN 服务和运行库；不会移除其他应用安装的 OpenVPN 或共享驱动。继续安装表示您同意上述条款，并授权安装所需组件。

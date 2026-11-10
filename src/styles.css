@@ -1,0 +1,1091 @@
+﻿:root {
+  color-scheme: dark;
+  --bg: #07090d;
+  --panel: #242424;
+  --panel-modal: #242424;
+  --panel-input: #2b2b2b;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-input: rgba(255, 255, 255, 0.16);
+  --text: #eef6ff;
+  --text-strong: #fff;
+  --muted: #8c8c8c;
+  --winbar-btn-color: #9aa8ba;
+  --winbar-hover: rgba(255, 255, 255, 0.12);
+  --overlay: rgba(0, 0, 0, 0.38);
+  --panel-shadow: 0 18px 54px rgba(0, 0, 0, 0.38);
+  --accent: #2385e8;
+  --accent-soft: rgba(35, 133, 232, 0.14);
+  --titlebar-height: 40px;
+}
+
+/* 浅色主题：桌面端默认，与 Web 端 data-theme='light' 对齐 */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3f5f9;
+  --panel: #ffffff;
+  --panel-modal: #ffffff;
+  --panel-input: #eaeef4;
+  --line: rgba(15, 23, 42, 0.12);
+  --line-input: rgba(15, 23, 42, 0.24);
+  --text: #16202e;
+  --text-strong: #16202e;
+  --muted: #8291a6;
+  --winbar-btn-color: #54657e;
+  --winbar-hover: rgba(15, 23, 42, 0.1);
+  --overlay: rgba(15, 23, 42, 0.4);
+  --panel-shadow: 0 18px 54px rgba(15, 23, 42, 0.2);
+}
+
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* 无边框窗口顶部拖拽层：完全透明（无背景、无边框、无阴影），只负责拖动窗口，不产生任何"带" */
+.winbar-drag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--titlebar-height);
+  background: transparent;
+  -webkit-app-region: drag;
+  z-index: 30;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.winbar__subject {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 424px);
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 右上角悬浮窗口按钮：透明底，仅 hover 时浮现背景；悬浮在内容之上，与内容融为一体 */
+.winbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  height: var(--titlebar-height);
+  background: transparent;
+  -webkit-app-region: no-drag;
+  z-index: 31;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.winbar__btn {
+  width: 44px;
+  height: var(--titlebar-height);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--winbar-btn-color);
+  cursor: pointer;
+}
+
+.winbar__btn:hover {
+  background: var(--winbar-hover);
+  color: var(--text-strong);
+}
+
+.winbar__btn--close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+.winbar__icon-restore {
+  display: none;
+}
+
+.winbar__icon-exit-fullscreen {
+  display: none;
+}
+
+/* 全屏按钮只在会议窗口（meeting-shell）出现：主窗口工作台不提供全屏。 */
+#fullscreenBtn {
+  display: none;
+}
+
+body.meeting-shell #fullscreenBtn {
+  display: grid;
+}
+
+#layoutBtn {
+  display: none;
+}
+
+body.meeting-shell #layoutBtn {
+  display: inline-flex;
+}
+
+#settingsBtn {
+  display: grid;
+}
+
+body.meeting-shell #settingsBtn {
+  display: grid;
+}
+
+.winbar__btn--layout {
+  width: 64px;
+  grid-template-columns: 14px auto;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.winbar__btn--layout span {
+  line-height: 1;
+}
+
+/* 会议窗口标题栏左侧：会议时长（会议详情 04:12）；
+   默认隐藏，收到会议页推送的时长后才显示，避免未入会时出现空壳文案。 */
+.winbar__timer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  align-items: center;
+  height: var(--titlebar-height);
+  max-width: 210px;
+  padding: 0 14px;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--winbar-btn-color);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+body.meeting-shell .winbar__timer:not([hidden]) {
+  display: flex;
+}
+
+body.window-fullscreen .winbar__timer {
+  color: #54657e;
+}
+
+
+/* 会议窗口给自绘标题栏留出 40px。底边直接贴合窗口，避免最大化/还原时
+   100vh 高度的过渡动画反复改变 iframe 尺寸，引起整个画面和 Jitsi 宫格抖动。
+   只在切换全屏时让顶部与标题栏的滑出动画同步。 */
+body.meeting-shell .stage {
+  top: var(--titlebar-height);
+  height: auto;
+  transition: top 0.16s ease;
+}
+
+body.window-fullscreen .winbar,
+body.window-fullscreen .winbar-drag {
+  opacity: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+body.window-fullscreen .winbar-drag {
+  background: #fff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+body.window-fullscreen .winbar__subject {
+  color: #8291a6;
+}
+
+body.window-fullscreen .winbar__btn {
+  color: #54657e;
+}
+
+body.window-fullscreen .winbar__btn:hover {
+  background: rgba(15, 23, 42, 0.1);
+  color: #16202e;
+}
+
+body.window-fullscreen .winbar__btn--close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+body.window-fullscreen.fullscreen-controls-visible .winbar,
+body.window-fullscreen.fullscreen-controls-visible .winbar-drag {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+body.window-fullscreen #minimizeBtn,
+body.window-fullscreen #maximizeBtn,
+body.window-fullscreen #closeBtn {
+  display: none;
+}
+
+body.meeting-shell.window-fullscreen .stage {
+  top: 0;
+}
+
+body.window-fullscreen .winbar__icon-enter-fullscreen {
+  display: none;
+}
+
+body.window-fullscreen .winbar__icon-exit-fullscreen {
+  display: block;
+}
+
+body.win-maximized .winbar__icon-max {
+  display: none;
+}
+
+body.win-maximized .winbar__icon-restore {
+  display: block;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  width: 100vw;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- 弹窗（与 Web 端"预定会议"弹窗同一套视觉语言） ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 18px 20px;
+  background: var(--overlay);
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.share-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  background: var(--overlay);
+  pointer-events: none;
+}
+
+.share-loading[hidden] {
+  display: none;
+}
+
+.share-loading__panel {
+  min-width: 260px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 22px 28px;
+  border: 1px solid var(--line-input);
+  border-radius: 8px;
+  background: var(--panel-modal);
+  box-shadow: var(--panel-shadow);
+}
+
+.share-loading__panel strong {
+  color: var(--text-strong);
+  font-size: 15px;
+}
+
+.share-loading__panel span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.share-loading__spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--line-input);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: share-spin 0.8s linear infinite;
+}
+
+@keyframes share-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modal {
+  position: relative;
+  width: min(500px, calc(100vw - 40px));
+  max-height: min(688px, calc(100vh - 36px));
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-modal);
+  box-shadow: var(--panel-shadow);
+}
+
+.modal__head {
+  flex: 0 0 auto;
+  padding: 22px 24px 12px;
+}
+
+.modal__head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.icon-btn {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  min-height: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  color: var(--text-strong);
+  border-radius: 6px;
+}
+
+.modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 4px 24px 16px;
+  overflow-y: auto;
+}
+
+/* 字段：左侧标签列 + 右侧输入，和 Web 端桌面弹窗一致 */
+.field {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.field span {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.modal__hint {
+  grid-column: 2;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.invite-summary {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(35, 133, 232, 0.35);
+  border-radius: 4px;
+  background: rgba(35, 133, 232, 0.1);
+}
+
+.invite-summary span,
+.invite-summary small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.invite-summary strong {
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 11px;
+  color: var(--text-strong);
+  border: 1px solid var(--line-input);
+  border-radius: 4px;
+  background: var(--panel-input);
+  outline: none;
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: #2588ff;
+  box-shadow: 0 0 0 1px #2588ff;
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: var(--overlay);
+}
+
+.settings-backdrop[hidden] {
+  display: none;
+}
+
+.settings-dialog {
+  height: min(620px, calc(100vh - 44px));
+  width: min(800px, calc(100vw - 44px));
+  max-height: calc(100vh - 44px);
+  display: grid;
+  grid-template-columns: 164px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-modal);
+  box-shadow: var(--panel-shadow);
+}
+
+.settings-dialog__side {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 14px;
+  border-right: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+:root:not([data-theme='light']) .settings-dialog__side {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settings-dialog__side h2 {
+  margin: 0 8px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.settings-dialog__nav {
+  width: 100%;
+  min-height: 42px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-dialog__nav:hover,
+.settings-dialog__nav--active {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.settings-dialog__main {
+  min-height: 0;
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-dialog__head {
+  flex: 0 0 auto;
+  position: relative;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 58px 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-dialog__head h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.settings-dialog__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.settings-dialog__close:hover {
+  background: var(--winbar-hover);
+  color: var(--text-strong);
+}
+
+.settings-dialog__panel {
+  flex: 1 1 auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  min-height: 0;
+  padding: 22px 24px 26px;
+  overflow-y: auto;
+}
+.settings-dialog__panel[hidden] { display: none; }
+.ovpn-credentials[hidden] { display: none; }
+.settings-dialog__group + .settings-dialog__group { margin-top: 26px; }
+.settings-dialog__readonly { overflow-wrap: anywhere; margin: 0; }
+
+.settings-dialog__readonly {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  line-height: 1.6;
+  user-select: text;
+}
+.settings-dialog__panel .settings-dialog__action { justify-self: start; min-height: 36px; }
+.settings-dialog__panel input:not([type='checkbox']):not([type='radio']),
+.settings-dialog__panel textarea {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: 8px;
+}
+.settings-dialog__panel input:not([type='checkbox']):not([type='radio']) { min-height: 38px; }
+.settings-dialog :is(button, input, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.settings-dialog__panel .vpn-actions { gap: 10px; align-items: center; }
+.settings-dialog__panel .settings-dialog__hint { margin: 0; line-height: 1.65; }
+.settings-dialog__panel #ovpnName { overflow-wrap: anywhere; min-width: 0; }
+.settings-dialog__panel #ovpnTestResult:empty,
+.settings-dialog__panel #preferencesUserResult:empty { display: none; }
+
+@media (max-width: 620px) {
+  .settings-dialog { grid-template-columns: 112px minmax(0, 1fr); width: calc(100vw - 24px); }
+  .settings-dialog__side { padding: 20px 8px; }
+  .settings-dialog__panel { padding: 18px 16px 24px; }
+  .settings-dialog__head { padding-left: 16px; }
+  .settings-dialog__path-line { grid-template-columns: minmax(0, 1fr) auto; }
+  .settings-dialog__path { grid-column: 1 / -1; }
+}
+
+.settings-dialog__group {
+  display: grid;
+  gap: 18px;
+}
+
+.settings-dialog__label {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settings-dialog__group + .settings-dialog__group {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-dialog__row {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-dialog__row-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.settings-dialog__path-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-dialog__path {
+  min-width: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  overflow: hidden;
+  border: 1px solid var(--line-input);
+  border-radius: 4px;
+  background: var(--panel-input);
+  color: var(--text-strong);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-dialog__number-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-dialog__number {
+  width: 112px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-input);
+  border-radius: 4px;
+  background: var(--panel-input);
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.settings-dialog__suffix {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.settings-dialog__hint {
+  max-width: 420px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.settings-dialog__action {
+  min-width: 60px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-input);
+  border-radius: 4px;
+  background: var(--panel-input);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.settings-dialog__action:hover {
+  border-color: var(--accent);
+}
+
+.settings-dialog__action:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.settings-dialog__check {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-strong);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.settings-dialog__check input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 0;
+  accent-color: var(--accent);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.recording-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.recording-mode { --border: var(--line); --bg-surface: var(--panel-modal); --text-muted: var(--muted); position: relative; min-width: 0; cursor: pointer; }
+.recording-mode > input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; padding: 0; }
+.recording-mode__card { position: relative; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; padding: 18px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); transition: border-color 140ms, background-color 140ms; }
+.recording-mode__icon { width: 26px; height: 26px; margin-bottom: 14px; color: var(--text-muted); }
+.recording-mode__title { padding-right: 16px; color: var(--text-strong); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.recording-mode__description { margin-top: 7px; color: var(--text-muted); font-size: 12px; line-height: 1.8; }
+.recording-mode__mark { position: absolute; top: 16px; right: 14px; display: grid; place-items: center; width: 17px; height: 17px; border: 1px solid var(--border); border-radius: 4px; color: transparent; font-size: 11px; }
+.recording-mode > input:checked + .recording-mode__card { border-color: #1677ff; background: rgba(22,119,255,.07); box-shadow: inset 0 0 0 1px #1677ff; }
+.recording-mode > input:checked + .recording-mode__card .recording-mode__icon { color: #1677ff; }
+.recording-mode > input:checked + .recording-mode__card .recording-mode__mark { border-color: #1677ff; background: #1677ff; color: #fff; }
+.recording-mode > input:not(:disabled) + .recording-mode__card:hover { border-color: #1677ff; }
+.recording-mode > input:focus-visible + .recording-mode__card { outline: 3px solid rgba(22,119,255,.35); outline-offset: 3px; }
+.recording-mode > input:disabled + .recording-mode__card { opacity: .58; cursor: not-allowed; }
+@media (max-width: 640px) { .recording-modes { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .recording-mode__card { transition: none; } }
+
+.settings-dialog__error {
+  margin: -4px 0 0;
+  color: #e5484d;
+  font-size: 13px;
+}
+
+.layout-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  display: grid;
+  place-items: start end;
+  padding: calc(var(--titlebar-height) + 10px) 220px 18px 18px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.layout-backdrop[hidden] {
+  display: none;
+}
+
+.layout-dialog {
+  width: 320px;
+  max-width: calc(100vw - 36px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-modal);
+  box-shadow: var(--panel-shadow);
+  pointer-events: auto;
+}
+
+.layout-dialog__head {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.layout-dialog__head h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.layout-dialog__close {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.layout-dialog__close:hover {
+  background: var(--winbar-hover);
+  color: var(--text-strong);
+}
+
+.layout-dialog__body {
+  max-height: min(560px, calc(100vh - 120px));
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.layout-dialog__group {
+  display: grid;
+  gap: 6px;
+}
+
+.layout-dialog__group + .layout-dialog__group {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.layout-dialog__group-label {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.layout-dialog__grid-preview {
+  width: 30px;
+  height: 21px;
+  display: grid;
+  gap: 1.5px;
+  color: var(--muted);
+}
+
+.layout-dialog__option:hover .layout-dialog__grid-preview,
+.layout-dialog__option--active .layout-dialog__grid-preview {
+  color: var(--accent, #2385e8);
+}
+
+.layout-dialog__grid-preview i {
+  display: block;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+.layout-dialog__option {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.layout-dialog__option:hover {
+  background: var(--accent-soft);
+}
+
+.layout-dialog__option--active {
+  border-color: rgba(35, 133, 232, 0.46);
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.layout-dialog__option-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layout-dialog__option-sub {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.modal__actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 18px;
+  border-top: 1px solid var(--line);
+  background: var(--panel-modal);
+}
+
+.modal__actions button {
+  min-height: 40px;
+  min-width: 96px;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  color: var(--text-strong);
+  border: 1px solid var(--line-input);
+  background: var(--panel-input);
+}
+
+.btn-ghost:hover {
+}
+
+.btn-primary {
+  color: #fff;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+}
+
+.btn-primary:hover {
+  background: #1e7bd8;
+}
+
+.stage {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.meeting-frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .app {
+    height: 100vh;
+  }
+}
+:root .vpn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+#vpnProfile {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d7dce4;
+  border-radius: 6px;
+  background: #fff;
+  color: #263044;
+  font: inherit;
+}
+
+.vpn-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#vpnStatus { font-weight: 600; }
+
+.settings-dialog__panel[data-settings-panel="vpn"] .settings-dialog__group { gap: 10px; }
+.settings-dialog__panel[data-settings-panel="vpn"] .vpn-actions { margin: 6px 0; }
+.ovpn-field { display: grid; gap: 8px; margin: 4px 0; min-width: 0; }
+.ovpn-field textarea, .ovpn-field input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-modal);
+  color: inherit;
+  font: inherit;
+}
+.ovpn-field textarea { resize: vertical; min-height: 96px; font-family: Consolas, monospace; }
+.ovpn-field input:focus-visible, .ovpn-field textarea:focus-visible { outline: 2px solid #2878e3; outline-offset: 2px; }
+.ovpn-credentials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+#ovpnName { overflow-wrap: anywhere; }
+#ovpnStatus { font-weight: 600; }
+@media (max-width: 760px) { .ovpn-credentials { grid-template-columns: 1fr; gap: 0; } }
+
+.vpn-profile-field {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.vpn-actions .btn-primary,
+.vpn-actions .btn-ghost {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #d7dce4;
+  font: inherit;
+  cursor: pointer;
+}
+.offline-entry {
+  position: fixed;
+  inset: var(--titlebar-height) 0 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg);
+}
+.offline-entry[hidden] { display: none; }
+.offline-entry__spinner[hidden], .offline-entry__card[hidden] { display: none; }
+.offline-entry__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: offline-entry-spin 0.9s linear infinite;
+}
+@keyframes offline-entry-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .offline-entry__spinner { animation-duration: 2.4s; }
+}
+.offline-entry__card {
+  width: min(440px, 100%);
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-modal);
+  box-shadow: var(--panel-shadow);
+}
+.offline-entry h1 { margin: 18px 0 12px; font-size: 24px; }
+.offline-entry p { color: var(--muted); line-height: 1.6; }
+.offline-entry .vpn-actions { margin-top: 24px; flex-wrap: wrap; }
+.ovpn-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+.ovpn-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ovpn-status[data-state="connected"] { color: #15803d; }
+.ovpn-status[data-state="connecting"], .ovpn-status[data-state="disconnecting"] { color: #a16207; }

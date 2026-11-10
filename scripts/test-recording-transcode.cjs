@@ -1,0 +1,28 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const vm = require('node:vm');
+const { spawn, spawnSync } = require('node:child_process');
+const executablePath = require('ffmpeg-static');
+const source = fs.readFileSync(path.join(__dirname, '../src/main.js'), 'utf8');
+const fn = source.slice(source.indexOf('function transcodeWebmToMp4('), source.indexOf('\nfunction broadcastDesktopSettings('));
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'cloudmeet-transcode-'));
+const input = path.join(directory, 'vp8.webm'), output = path.join(directory, 'result.mp4');
+const generated = spawnSync(executablePath, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'color=blue:s=320x180:r=15', '-f', 'lavfi', '-i', 'sine=frequency=440', '-t', '1', '-c:v', 'libvpx', '-c:a', 'libopus', input]);
+assert.equal(generated.status, 0, generated.stderr.toString());
+const context = { fs, spawn, console, activeTranscodes: new Map(), getFfmpegExecutablePath: () => executablePath };
+vm.createContext(context);
+vm.runInContext(fn, context);
+context.transcodeWebmToMp4('test', input, output).then(async () => {
+  assert.ok(fs.statSync(output).size > 0);
+  const decoded = spawnSync(executablePath, ['-v', 'error', '-i', output, '-f', 'null', '-']);
+  assert.equal(decoded.status, 0, decoded.stderr.toString());
+  assert.ok(fs.statSync(input).size > 0, 'original recording retained');
+  assert.equal(context.activeTranscodes.size, 0);
+  const invalid = path.join(directory, 'invalid.webm');
+  fs.writeFileSync(invalid, 'invalid recording');
+  await assert.rejects(context.transcodeWebmToMp4('invalid', invalid, path.join(directory, 'invalid.mp4')));
+  assert.equal(fs.readFileSync(invalid, 'utf8'), 'invalid recording');
+  console.log('PASS actual VP8/Opus WebM to playable MP4, original retained');
+}).catch(error => { console.error(error); process.exitCode = 1; });

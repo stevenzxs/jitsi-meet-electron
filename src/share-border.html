@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'" />
+  <title>屏幕共享中</title>
+  <style>
+    /* 整屏透明窗口只画一圈绿框 + 顶部状态胶囊，对齐腾讯会议的共享中标识。 */
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+    .border {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      pointer-events: none;
+    }
+    .border__corner {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      box-sizing: border-box;
+      border-color: #38bdf8;
+      border-style: solid;
+      border-width: 0;
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.28));
+    }
+    .border__corner--top-left {
+      top: 0;
+      left: 0;
+      border-top-width: 4px;
+      border-left-width: 4px;
+    }
+    .border__corner--top-right {
+      top: 0;
+      right: 0;
+      border-top-width: 4px;
+      border-right-width: 4px;
+    }
+    .border__corner--bottom-left {
+      bottom: 0;
+      left: 0;
+      border-bottom-width: 4px;
+      border-left-width: 4px;
+    }
+    .border__corner--bottom-right {
+      right: 0;
+      bottom: 0;
+      border-right-width: 4px;
+      border-bottom-width: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="border">
+    <span class="border__corner border__corner--top-left" aria-hidden="true"></span>
+    <span class="border__corner border__corner--top-right" aria-hidden="true"></span>
+    <span class="border__corner border__corner--bottom-left" aria-hidden="true"></span>
+    <span class="border__corner border__corner--bottom-right" aria-hidden="true"></span>
+  </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>选择共享内容</title>
+    <link rel="stylesheet" href="./source-picker.css" />
+  </head>
+  <body>
+    <main class="picker">
+      <nav class="picker__tabs" aria-label="共享类型">
+        <button id="windowTab" class="picker__tab" type="button" data-type="window">窗口</button>
+        <button id="screenTab" class="picker__tab" type="button" data-type="screen">整个屏幕</button>
+      </nav>
+
+      <section id="sourceGrid" class="source-grid" aria-live="polite">
+        <div class="loading">
+          <div class="loading__spinner" aria-hidden="true"></div>
+          <span>正在加载可共享内容...</span>
+        </div>
+      </section>
+
+      <section class="picker__audio">
+        <label class="audio-toggle" for="shareAudioToggle">
+          <span class="audio-toggle__icon" aria-hidden="true">♪</span>
+          <span class="audio-toggle__copy">
+            <span class="audio-toggle__text">同时分享所有音频输出</span>
+            <span class="audio-toggle__hint">会议成员将听到本机播放的系统声音</span>
+          </span>
+          <input id="shareAudioToggle" class="audio-toggle__input" type="checkbox" />
+          <span class="audio-toggle__switch" aria-hidden="true"></span>
+        </label>
+      </section>
+
+      <aside id="screenWarning" class="picker__warning" hidden>
+        共享整个屏幕时会议画面也会被共享，可能出现画面嵌套；共享开始后会议窗口将自动最小化。
+      </aside>
+
+      <footer class="picker__foot">
+        <span id="statusText" class="picker__status">请选择要共享的内容</span>
+        <div class="picker__actions">
+          <button id="cancelBtn" class="btn btn--ghost" type="button">取消</button>
+          <button id="shareBtn" class="btn btn--primary" type="button" disabled>共享</button>
+        </div>
+      </footer>
+    </main>
+
+    <script src="./source-picker.js"></script>
+  </body>
+</html>

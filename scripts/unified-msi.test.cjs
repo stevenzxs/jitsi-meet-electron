@@ -1,0 +1,44 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { unifiedXml } = require('./unified-msi.cjs');
+test('single native MSI includes application, VPN service and legacy installation gate', () => {
+  const xml = unifiedXml('1.0.0', 'C:/runtime', 'C:/action.dll', ['cloudmeet.exe', 'resources/app.asar']);
+  assert.match(xml, /Name="CloudMeet"/);
+  assert.match(xml, /Name="CloudMeetVPN"/);
+  assert.match(xml, /Name="app.asar"/);
+  assert.match(xml, /Name="cloudmeet.exe"/);
+  assert.match(xml, /WIX_UPGRADE_DETECTED/);
+  assert.match(xml, /NOT PREVIOUSEXE/);
+  assert.match(xml, /ProtectInstallRoot/);
+  assert.doesNotMatch(xml, /MsiPackage|ExePackage/);
+  assert.match(xml, /Advertise="yes" Directory="ProgramMenuFolder"/);
+  assert.match(xml, /Id="CloudMeetDesktopShortcut" Name="CloudMeet" Advertise="yes" Directory="DesktopFolder"/);
+  assert.match(xml, /<Directory Id="DesktopFolder" \/>/);
+  assert.doesNotMatch(xml, /Component Id="AppShortcut"/);
+  assert.match(xml, /<Icon Id="CloudMeetIcon.exe"/);
+  assert.match(xml, /Id="ARPPRODUCTICON" Value="CloudMeetIcon.exe"/);
+  assert.match(xml, /Id="CloudMeetUninstallShortcut"/);
+  assert.match(xml, /Target="\[System64Folder\]msiexec.exe" Arguments="\/x \[ProductCode\]"/);
+  assert.match(xml, /Icon="CloudMeetIcon.exe"/);
+});
+test('upgrade detection includes same versions and does not depend on installer language', () => {
+  const xml = unifiedXml('1.0.0', 'C:/runtime', 'C:/action.dll', ['cloudmeet.exe']);
+  assert.match(xml, /UpgradeVersion Maximum="1.0.0" IncludeMaximum="yes" Property="WIX_UPGRADE_DETECTED"/);
+  assert.match(xml, /UpgradeVersion Minimum="1.0.0" IncludeMinimum="no" OnlyDetect="yes"/);
+  assert.doesNotMatch(xml, /UpgradeVersion[^>]*Language=/);
+  assert.match(xml, /RemoveExistingProducts After="InstallInitialize"/);
+  assert.match(xml, /CustomAction Id="CheckInstallVersion"[^>]*DllEntry="CheckInstallVersion"/);
+  assert.equal((xml.match(/Action="CheckInstallVersion" Before="LaunchConditions"/g) || []).length, 2);
+  assert.match(xml, /Property Id="CLOUDMEET_REINSTALL" Secure="yes"/);
+});
+test('final unified installer uses Simplified Chinese UI and custom messages', () => {
+  const xml = unifiedXml('1.0.0', 'C:/runtime', 'C:/action.dll', ['cloudmeet.exe']);
+  assert.match(xml, /Language="2052" Codepage="936"/);
+  assert.match(xml, /SummaryCodepage="936"/);
+  assert.match(xml, /UIRef Id="WixUI_Common"/);
+  assert.match(xml, /Show Dialog="ProgressDlg" Before="ExecuteAction"/);
+  assert.doesNotMatch(xml, /DialogRef Id="InstallDirDlg"/);
+  assert.match(xml, /Name="卸载 CloudMeet"/);
+  assert.match(xml, /已安装更新版本的 CloudMeet/);
+  assert.doesNotMatch(xml, /Uninstall the previous|A newer CloudMeet|Language="1033"/);
+});

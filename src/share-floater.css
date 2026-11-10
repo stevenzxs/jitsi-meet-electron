@@ -1,0 +1,32 @@
+:root { color-scheme: light; font-family: "Microsoft YaHei", "Segoe UI", sans-serif; color: #243247; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #fff; }
+.floater { height: 100%; border: 1px solid #dbe2eb; border-top: 3px solid #07a957; user-select: none; }
+.floater__status { display: flex; align-items: center; gap: 8px; height: 33px; padding: 0 14px 0 8px; background: #f3faf6; font-size: 12px; white-space: nowrap; }
+.floater__grip { cursor: move; width: 28px; flex: none; font-size: 22px; color: #7a8898; text-align: center; -webkit-app-region: drag; }
+.floater__dot { width: 7px; height: 7px; border-radius: 50%; background: #07a957; flex: none; }
+.floater__source { overflow: hidden; text-overflow: ellipsis; color: #657489; min-width: 0; flex: 1; }
+.floater__error { overflow: hidden; text-overflow: ellipsis; color: #b42318; max-width: 48%; }
+.floater__hint { display: none; color: #657489; }
+.floater__actions { display: flex; align-items: center; justify-content: center; gap: 8px; height: 54px; padding: 5px 12px; }
+.floater__actions button { min-width: 76px; flex: 1; height: 38px; padding: 0 10px; border: 1px solid transparent; border-radius: 5px; background: #fff; color: #243247; font: inherit; font-size: 13px; white-space: nowrap; cursor: pointer; -webkit-app-region: no-drag; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.floater__actions .icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* SVG 元素的 hidden 属性在部分渲染引擎不生效，显式声明保证双图标切换时只显示一个。 */
+.floater__actions .icon[hidden] { display: none; }
+.floater__actions button[hidden] { display: none; }
+.floater__actions .icon--fill { fill: currentColor; stroke: none; }
+.floater__actions .label { overflow: hidden; text-overflow: ellipsis; }
+.floater__actions button:hover { background: #eef3f9; }
+.floater__actions button:focus-visible { outline: 2px solid #2979e8; outline-offset: 1px; }
+.floater__actions button:disabled { color: #94a0b0; cursor: default; background: #f7f8fa; }
+.floater__actions .floater__danger { background: #e5484d; color: #fff; }
+.floater__actions .is-recording { color: #d92d20; background: #fff1f0; }
+.floater__actions .floater__danger:hover { background: #cd3439; }
+.floater__separator { width: 1px; height: 22px; background: #dbe2eb; flex: none; margin: 0 4px; }
+.is-paused { border-top-color: #df9419; }
+.is-paused .floater__status { background: #fff8e9; }
+.is-paused .floater__dot { background: #df9419; }
+.is-collapsed .floater__actions { display: none; }
+.is-collapsed .floater__hint { display: inline; }
+.is-collapsed .floater__error { display: none; }
+@media (max-width: 700px) { .floater__actions { gap: 2px; padding-inline: 4px; } .floater__actions button { min-width: 0; padding-inline: 3px; font-size: 12px; } .floater__actions .label { max-width: 4.5em; } }

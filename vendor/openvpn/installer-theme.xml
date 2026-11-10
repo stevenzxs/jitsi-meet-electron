@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="http://wixtoolset.org/schemas/thmutil/2010">
+  <Window Width="560" Height="480" HexStyle="100a0000" FontId="0">CloudMeet 安装程序</Window>
+  <Font Id="0" Height="-13" Weight="400" Foreground="463225" Background="FFFFFF">Microsoft YaHei UI</Font>
+  <Font Id="1" Height="-24" Weight="600" Foreground="573B19" Background="FFFFFF">Microsoft YaHei UI</Font>
+  <Font Id="2" Height="-12" Weight="400" Foreground="8A7768" Background="FFFFFF">Microsoft YaHei UI</Font>
+  <Font Id="3" Height="-18" Weight="600" Foreground="463225" Background="FFFFFF">Microsoft YaHei UI</Font>
+  <Image X="28" Y="24" Width="48" Height="48" ImageFile="cloudmeet-brand.png" Visible="yes" />
+  <Text X="90" Y="23" Width="430" Height="32" FontId="1" Visible="yes">CloudMeet</Text>
+  <Text X="91" Y="58" Width="430" Height="22" FontId="2" Visible="yes">连接每一次协作</Text>
+  <Page Name="Install">
+    <Text X="28" Y="101" Width="504" Height="28" FontId="3">安装 CloudMeet</Text>
+    <Text X="28" Y="136" Width="504" Height="24" FontId="2">即将安装桌面客户端及所需的网络组件。</Text>
+    <Richedit Name="EulaRichedit" X="28" Y="174" Width="504" Height="132" TabStop="yes" FontId="0" HexStyle="0x200000" />
+    <Checkbox Name="EulaAcceptCheckbox" X="28" Y="324" Width="504" Height="24" TabStop="yes" FontId="0">我已阅读并同意许可条款</Checkbox>
+    <Text X="28" Y="353" Width="504" Height="22" FontId="2">安装系统网络组件时需要管理员授权。</Text>
+    <Button Name="WelcomeCancelButton" X="338" Y="385" Width="88" Height="30" TabStop="yes" FontId="0">取消</Button>
+    <Button Name="InstallButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">安装</Button>
+  </Page>
+  <Page Name="Progress">
+    <Text X="28" Y="108" Width="504" Height="30" FontId="3">正在处理，请稍候</Text>
+    <Text X="28" Y="153" Width="504" Height="28" FontId="2">安装程序正在准备组件，请勿关闭电脑。</Text>
+    <Text Name="OverallProgressPackageText" X="28" Y="208" Width="504" Height="46" FontId="0" />
+    <Progressbar Name="OverallCalculatedProgressbar" X="28" Y="276" Width="504" Height="12" />
+    <Button Name="ProgressCancelButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">取消</Button>
+  </Page>
+  <Page Name="Modify">
+    <Text X="28" Y="108" Width="504" Height="30" FontId="3">管理 CloudMeet</Text>
+    <Text X="28" Y="161" Width="504" Height="70" FontId="2">修复缺失的程序组件，或从这台电脑卸载 CloudMeet。</Text>
+    <Button Name="RepairButton" X="238" Y="385" Width="88" Height="30" TabStop="yes" FontId="0">修复</Button>
+    <Button Name="UninstallButton" X="338" Y="385" Width="88" Height="30" TabStop="yes" FontId="0">卸载</Button>
+    <Button Name="ModifyCancelButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">关闭</Button>
+  </Page>
+  <Page Name="Success">
+    <Text Name="SuccessHeader" X="28" Y="108" Width="504" Height="50" FontId="3">操作已完成</Text>
+    <Text X="28" Y="174" Width="504" Height="36" FontId="2">您可以关闭安装程序。</Text>
+    <Text Name="SuccessRestartText" X="28" Y="234" Width="504" Height="55" FontId="0" HideWhenDisabled="yes">需要重新启动 Windows 以完成操作。</Text>
+    <Button Name="SuccessRestartButton" X="338" Y="385" Width="88" Height="30" TabStop="yes" FontId="0" HideWhenDisabled="yes">重启</Button>
+    <Button Name="SuccessCancelButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">关闭</Button>
+  </Page>
+  <Page Name="Failure">
+    <Text X="28" Y="108" Width="504" Height="30" FontId="3">未能完成操作</Text>
+    <Text Name="FailureMessageText" X="28" Y="163" Width="504" Height="180" FontId="0" />
+    <Button Name="FailureCloseButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">关闭</Button>
+  </Page>
+  <Page Name="Help">
+    <Text X="28" Y="108" Width="504" Height="30" FontId="3">安装帮助</Text>
+    <Text X="28" Y="163" Width="504" Height="140" FontId="0">程序安装到系统默认目录，不支持更换位置。安装网络组件需要管理员授权。</Text>
+    <Button Name="HelpCancelButton" X="438" Y="385" Width="94" Height="30" TabStop="yes" FontId="0">关闭</Button>
+  </Page>
+</Theme>

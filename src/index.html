@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src http: https:; img-src 'self' data: https:; connect-src 'self' http: https: wss:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>云会议</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- 无边框窗口：顶部透明拖拽层（无背景，内容顶格铺满）+ 右上角悬浮窗口按钮 -->
+    <div class="winbar-drag">
+      <!-- 会议窗口标题栏：会议时长（会议详情 04:12），由会议页每秒推送，仅会议中显示 -->
+      <div id="winbarTimer" class="winbar__timer" hidden></div>
+      <div id="winbarSubject" class="winbar__subject" title=""></div>
+    </div>
+    <div class="winbar">
+      <button id="layoutBtn" class="winbar__btn winbar__btn--layout" type="button" title="布局" aria-label="布局">
+        <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+          <path d="M2 2h4v4H2zM8 2h4v4H8zM2 8h4v4H2zM8 8h4v4H8z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" />
+        </svg>
+        <span>布局</span>
+      </button>
+      <button id="fullscreenBtn" class="winbar__btn" type="button" title="全屏" aria-label="全屏">
+        <svg class="winbar__icon-enter-fullscreen" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+          <path d="M5 2H2v3M9 2h3v3M5 12H2V9M12 9v3H9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <svg class="winbar__icon-exit-fullscreen" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+          <path d="M5 2v3H2M9 2v3h3M5 12V9H2M12 9H9v3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <button id="settingsBtn" class="winbar__btn" type="button" title="设置" aria-label="设置">
+        <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+          <path
+            d="M5.9 1.4h2.2l.35 1.45c.28.1.55.22.8.38l1.27-.78 1.56 1.56-.78 1.27c.15.25.28.52.38.8l1.45.35v2.2l-1.45.35c-.1.28-.22.55-.38.8l.78 1.27-1.56 1.56-1.27-.78c-.25.15-.52.28-.8.38l-.35 1.45H5.9l-.35-1.45a5 5 0 0 1-.8-.38l-1.27.78-1.56-1.56.78-1.27a5 5 0 0 1-.38-.8L.87 8.63v-2.2l1.45-.35c.1-.28.22-.55.38-.8l-.78-1.27 1.56-1.56 1.27.78c.25-.15.52-.28.8-.38L5.9 1.4Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+            stroke-linejoin="round"
+          />
+          <circle cx="7" cy="7.53" r="1.75" fill="none" stroke="currentColor" stroke-width="1" />
+        </svg>
+      </button>
+      <button id="minimizeBtn" class="winbar__btn" type="button" title="最小化" aria-label="最小化">
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <rect x="1.5" y="5.5" width="9" height="1.2" rx="0.6" fill="currentColor" />
+        </svg>
+      </button>
+      <button id="maximizeBtn" class="winbar__btn" type="button" title="最大化" aria-label="最大化">
+        <svg class="winbar__icon-max" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        <svg class="winbar__icon-restore" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <rect x="2.2" y="4" width="6" height="6" rx="0.8" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path
+            d="M4.2 4V2.9A1.4 1.4 0 0 1 5.6 1.5h3.8A1.4 1.4 0 0 1 10.8 2.9v3.8a1.4 1.4 0 0 1-1.4 1.4H8.4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.1"
+          />
+        </svg>
+      </button>
+      <button id="closeBtn" class="winbar__btn winbar__btn--close" type="button" title="关闭" aria-label="关闭">
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="app">
+      <main class="stage">
+        <iframe
+          id="meetingFrame"
+          class="meeting-frame"
+          allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-read; clipboard-write"
+          scrolling="auto"
+        ></iframe>
+      </main>
+    </div>
+
+    <section id="offlineEntry" class="offline-entry" aria-label="会议服务连接" hidden>
+      <div id="offlineSpinner" class="offline-entry__spinner" role="status" aria-label="正在连接会议服务" hidden></div>
+      <div id="offlineFailure" class="offline-entry__card" hidden>
+        <h1>连接暂未成功</h1>
+        <p id="offlineMessage" role="status" aria-live="polite"></p>
+        <div class="vpn-actions">
+          <button id="offlineVpn" class="btn-primary" type="button">VPN 设置</button>
+          <button id="offlineRetry" class="btn-ghost" type="button">重新加载</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="inviteModal" class="modal-backdrop" hidden>
+      <form id="inviteForm" class="modal" role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+        <div class="modal__head">
+          <h2 id="inviteTitle">加入会议</h2>
+          <button id="closeInviteBtn" class="icon-btn" type="button" aria-label="关闭">✕</button>
+        </div>
+        <div class="modal__body">
+          <div class="invite-summary">
+            <span>会议号</span>
+            <strong id="inviteRoomText">---</strong>
+            <small id="inviteSubjectText">云会议邀请</small>
+          </div>
+          <label class="field">
+            <span>昵称</span>
+            <input id="inviteNameInput" type="text" maxlength="20" placeholder="你的姓名 / 昵称" />
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input id="invitePasswordInput" type="password" maxlength="16" placeholder="有密码时填写" />
+          </label>
+          <label class="field">
+            <span>密钥</span>
+            <input id="inviteHostKeyInput" type="text" maxlength="19" autocomplete="off" placeholder="主持人密钥（选填）" />
+          </label>
+          <p class="modal__hint">填写主持人密钥将以主持人身份加入；密码不会写入分享链接，仅用于本次桌面端入会。</p>
+        </div>
+        <div class="modal__actions">
+          <button type="button" id="cancelInviteBtn" class="btn-ghost">取消</button>
+          <button type="submit" class="btn-primary">加入会议</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="settingsModal" class="settings-backdrop" hidden>
+      <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <aside class="settings-dialog__side" aria-label="设置分类">
+          <h2 id="settingsTitle">设置</h2>
+          <button class="settings-dialog__nav" type="button" data-settings-tab="profile"><span>个人信息</span></button>
+          <button class="settings-dialog__nav settings-dialog__nav--active" type="button" data-settings-tab="recording">
+            <span>录制</span>
+          </button>
+          <button class="settings-dialog__nav" type="button" data-settings-tab="video">
+            <span>视频</span>
+          </button>
+          <button class="settings-dialog__nav" type="button" data-settings-tab="vpn">
+            <span>VPN</span>
+          </button>
+        </aside>
+        <main class="settings-dialog__main">
+          <header class="settings-dialog__head">
+            <h3 id="settingsPanelTitle">录制</h3>
+            <button id="closeSettingsBtn" class="settings-dialog__close" type="button" title="关闭" aria-label="关闭">
+              <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+                <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+              </svg>
+            </button>
+          </header>
+          <section class="settings-dialog__panel" data-settings-panel="profile" hidden>
+            <div class="settings-dialog__group">
+              <label class="ovpn-field" for="preferencesName"><span>用户名</span><input id="preferencesName" type="text" maxlength="20" autocomplete="off" /></label>
+              <div class="ovpn-field"><span>用户 ID（只读）</span><p id="preferencesUserId" class="settings-dialog__readonly"></p></div>
+              <p id="preferencesUserResult" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+          <section class="settings-dialog__panel" data-settings-panel="recording">
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">本地录制</div>
+              <div class="settings-dialog__row">
+                <span class="settings-dialog__row-label">录制文件保存至</span>
+                <div class="settings-dialog__path-line">
+                  <span id="recordingDirectoryText" class="settings-dialog__path" title="">正在读取...</span>
+                  <button id="changeRecordingDirBtn" class="settings-dialog__action" type="button">更改</button>
+                  <button id="openRecordingDirBtn" class="settings-dialog__action" type="button">打开</button>
+                </div>
+              </div>
+              <label class="settings-dialog__check">
+                <input id="recordAudioFileInput" type="checkbox" />
+                <span>同时录制音频文件</span>
+              </label>
+            </div>
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">录制模式</div>
+              <div class="recording-modes" role="group" aria-label="录制模式（可多选）" aria-describedby="recordingModeHint">
+                <label class="recording-mode">
+                  <input type="checkbox" name="recordingMode" value="host-camera" />
+                  <span class="recording-mode__card">
+                    <svg class="recording-mode__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3z" stroke-linejoin="round"/></svg>
+                    <span class="recording-mode__title">录制主持人视频</span>
+                    <span class="recording-mode__description">主持人画面与麦克风<br />随主持权自动切换</span>
+                    <span class="recording-mode__mark" aria-hidden="true">✓</span>
+                  </span>
+                </label>
+                <label class="recording-mode">
+                  <input type="checkbox" name="recordingMode" value="shared-screen" />
+                  <span class="recording-mode__card">
+                    <svg class="recording-mode__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2.5"/><path d="M8 21h8m-4-4v4m-3-10 3-3 3 3m-3-3v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="recording-mode__title">录制共享屏幕</span>
+                    <span class="recording-mode__description">共享画面与共享者麦克风<br />共享结束自动保存</span>
+                    <span class="recording-mode__mark" aria-hidden="true">✓</span>
+                  </span>
+                </label>
+              <label class="recording-mode">
+                <input type="checkbox" name="recordingMode" value="composite" />
+                <span class="recording-mode__card">
+                  <svg class="recording-mode__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="13" y="12" width="7" height="6" rx="1"/></svg>
+                  <span class="recording-mode__title">主持人视频＋共享屏幕</span>
+                  <span class="recording-mode__description">共享为主，主持人右下角小窗<br />两者麦克风，自动去重</span>
+                  <span class="recording-mode__mark" aria-hidden="true">✓</span>
+                </span>
+              </label>
+              </div>
+              <p id="recordingModeHint" class="settings-dialog__hint" aria-live="polite">可多选，每项生成一个视频；不含会议界面或电脑共享声音。</p>
+            </div>
+              <p id="settingsError" class="settings-dialog__error" hidden></p>
+          </section>
+          <section class="settings-dialog__panel" data-settings-panel="video" hidden>
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">视频设置</div>
+              <div class="settings-dialog__row">
+                <label class="settings-dialog__row-label" for="tilePollingSecondsInput">轮询切换时间</label>
+                <div class="settings-dialog__number-line">
+                  <input id="tilePollingSecondsInput" class="settings-dialog__number" type="number" min="0" max="7200" step="1" inputmode="numeric" placeholder="60" />
+                  <span class="settings-dialog__suffix">秒</span>
+                </div>
+                <p class="settings-dialog__hint">0 表示关闭；开启时最小 15 秒。选择宫格布局后，按当前宫格数量分批轮换在线成员。</p>
+              </div>
+            </div>
+          </section>
+          <section class="settings-dialog__panel" data-settings-panel="vpn" hidden>
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">VPN <span id="ovpnStatus" class="ovpn-status" role="status" aria-live="polite">尚未读取</span></div>
+              <div class="vpn-actions">
+                <button id="ovpnConnect" class="btn-primary" type="button" disabled>连接 OpenVPN</button>
+                <button id="ovpnDisconnect" class="btn-ghost" type="button" disabled>断开</button>
+                <button id="ovpnRefresh" class="settings-dialog__action" type="button">刷新状态</button>
+              </div>
+              <p id="ovpnError" class="settings-dialog__error" role="alert" hidden></p>
+            </div>
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">配置文件与分流</div>
+              <div class="vpn-actions"><button id="ovpnImport" class="settings-dialog__action" type="button">导入 .ovpn 配置</button><span id="ovpnName">尚未导入配置</span></div>
+              <label class="ovpn-field" for="ovpnRoutes"><span>目标 IPv4 / 网段（每行一个）</span>
+                <textarea id="ovpnRoutes" rows="4" spellcheck="false" placeholder="10.10.1.20&#10;10.20.0.0/16" aria-describedby="ovpnRouteHint"></textarea>
+              </label>
+              <p id="ovpnRouteHint" class="settings-dialog__hint">支持单 IP 和 /8 至 /32 网段，不支持 IPv6 或默认路由。关闭设置或连接前自动保存，重新连接后生效。</p>
+              <div id="ovpnCredentials" class="ovpn-credentials" hidden>
+                <label class="ovpn-field" for="ovpnUsername"><span>用户名（按配置需要填写）</span><input id="ovpnUsername" type="text" autocomplete="off" maxlength="4096" /></label>
+                <label class="ovpn-field" for="ovpnPassword"><span>密码（不保存）</span><input id="ovpnPassword" type="password" autocomplete="off" maxlength="4096" /></label>
+              </div>
+            </div>
+            <div class="settings-dialog__group">
+              <div class="settings-dialog__label">连接测试</div>
+              <label class="ovpn-field" for="ovpnTestAddress"><span>测试地址</span><input id="ovpnTestAddress" type="url" maxlength="2048" spellcheck="false" placeholder="http://10.8.0.1/vpn-probe" aria-describedby="ovpnTestHint" /></label>
+              <p id="ovpnTestHint" class="settings-dialog__hint">填写分流目标内的 IPv4 HTTP/HTTPS 地址，关闭设置或连接前自动保存，连接后测试。</p>
+              <div class="vpn-actions">
+                <button id="ovpnTest" class="settings-dialog__action" type="button" disabled>测试 VPN</button>
+                <span id="ovpnTestResult" role="status" aria-live="polite"></span>
+              </div>
+              <p class="settings-dialog__hint">请使用内联证书配置；不支持脚本、插件和外部证书文件。退出云会议会请求断开本应用建立的 OpenVPN。断开后不提供直连阻断保护。</p>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <div id="layoutModal" class="layout-backdrop" hidden>
+      <section class="layout-dialog" role="dialog" aria-modal="true" aria-labelledby="layoutTitle">
+        <header class="layout-dialog__head">
+          <h2 id="layoutTitle">布局</h2>
+          <button id="closeLayoutBtn" class="layout-dialog__close" type="button" title="关闭" aria-label="关闭">
+            <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+              <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+        <div class="layout-dialog__body">
+          <div class="layout-dialog__group">
+            <div class="layout-dialog__group-label">宫格布局</div>
+            <button class="layout-dialog__option" type="button" data-layout-mode="auto">
+              <span class="layout-dialog__option-title">自动宫格</span>
+              <span class="layout-dialog__option-sub">按人数自动调整</span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-2">
+              <span class="layout-dialog__option-title">2分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="2" data-grid-rows="1" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-4">
+              <span class="layout-dialog__option-title">4分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="2" data-grid-rows="2" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-9">
+              <span class="layout-dialog__option-title">9分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="3" data-grid-rows="3" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-16">
+              <span class="layout-dialog__option-title">16分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="4" data-grid-rows="4" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-25">
+              <span class="layout-dialog__option-title">25分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="5" data-grid-rows="5" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-36">
+              <span class="layout-dialog__option-title">36分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="6" data-grid-rows="6" aria-hidden="true"></span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="grid-49">
+              <span class="layout-dialog__option-title">49分屏</span>
+              <span class="layout-dialog__grid-preview" data-grid-cols="7" data-grid-rows="7" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="layout-dialog__group">
+            <div class="layout-dialog__group-label">其他布局</div>
+            <button class="layout-dialog__option" type="button" data-layout-mode="polling">
+              <span class="layout-dialog__option-title">轮询布局</span>
+            </button>
+            <button class="layout-dialog__option" type="button" data-layout-mode="default">
+              <span class="layout-dialog__option-title">右侧成员列表</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="shareLoading" class="share-loading" hidden>
+      <div class="share-loading__panel" role="status" aria-live="polite">
+        <div class="share-loading__spinner" aria-hidden="true"></div>
+        <strong>正在打开屏幕选择...</strong>
+        <span>请稍候，正在准备窗口和屏幕列表</span>
+      </div>
+    </div>
+
+    <script src="./recording-settings.js"></script>
+    <script src="./openvpn-panel.js"></script>
+    <script src="./vpn-settings-entry.js"></script>
+    <script src="./offline-entry.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

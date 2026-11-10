@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="zhsz">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="80" x2="904" y2="944" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#28D3F5"/>
+      <stop offset="0.52" stop-color="#1976E8"/>
+      <stop offset="1" stop-color="#10235F"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="220" y1="120" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="34" stdDeviation="42" flood-color="#00133A" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+  <rect x="96" y="96" width="832" height="832" rx="210" fill="url(#bg)" filter="url(#shadow)"/>
+  <path d="M188 294c56-88 150-134 282-138 186-6 306 76 366 224-83-76-180-109-292-98-129 13-232 76-309 190-39-51-55-110-47-178z" fill="url(#shine)"/>
+  <path d="M274 392h476l-254 240h244v108H274v-88l252-238H274z" fill="#F7FBFF"/>
+  <text x="512" y="823" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="800" letter-spacing="18" fill="#EAF6FF">ZHSZ</text>
+</svg>

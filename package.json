@@ -1,0 +1,35 @@
+{
+  "name": "cloudmeet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "可配置 iframe URL 的云会议桌面客户端",
+  "author": "CloudMeet",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node scripts/run-regression.cjs",
+    "verify": "npm test && node --check src/main.js && node --check src/renderer.js",
+    "test:native-share": "electron scripts/verify-share-electron.cjs",
+    "test:vpn": "node --test scripts/offline-entry.test.cjs scripts/windows-vpn.test.cjs scripts/vpn-panel.test.cjs scripts/openvpn-config.test.cjs scripts/openvpn-probe.test.cjs scripts/openvpn-management.test.cjs scripts/openvpn.test.cjs scripts/openvpn-panel.test.cjs scripts/openvpn-installer.test.cjs scripts/private-openvpn.test.cjs",
+    "verify:openvpn": "node scripts/build-openvpn-bundle.cjs",
+    "start": "electron-forge start",
+    "package": "cross-env CLOUDMEET_BUILD_MODE=release electron-forge package",
+    "package:debug": "cross-env CLOUDMEET_BUILD_MODE=debug electron-forge package",
+    "make": "set \"PATH=C:\\Program Files (x86)\\WiX Toolset v3.14\\bin;%PATH%\" && cross-env CLOUDMEET_BUILD_MODE=release ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ electron-forge make"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "ffmpeg-static": "^5.3.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-wix": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron/fuses": "^1.8.0",
+    "cross-env": "^7.0.3",
+    "electron": "^43.4.0"
+  }
+}
