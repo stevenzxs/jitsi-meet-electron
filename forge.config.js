@@ -41,7 +41,7 @@ module.exports = {
       windowsSign: {
         certificateFile: codeSignPfx,
         certificatePassword: codeSignPassword,
-        signWithParams: '/fd sha256 /td sha256 /tr http://timestamp.digicert.com',
+        timestampServer: 'http://timestamp.digicert.com',
       },
     } : {}),
   },
