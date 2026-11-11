@@ -1,6 +1,6 @@
 {
   "name": "cloudmeet",
-  "version": "1.0.15",
+  "version": "1.0.0",
   "private": true,
   "description": "可配置 iframe URL 的云会议桌面客户端",
   "author": "CloudMeet",
