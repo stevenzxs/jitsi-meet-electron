@@ -31,11 +31,12 @@ test('main has no global certificate bypass', () => {
   assert.doesNotMatch(main, /callback\(true\)/);
   assert.doesNotMatch(main, /app\.on\('certificate-error'/);
   // A private deployment may register strict verification without trusting other hosts.
-  const registration = main.match(/if \(deploymentConfig\.origin === 'https:\/\/115\.190\.243\.21'\) \{([\s\S]*?)\n    \}/);
+  const registration = main.match(/if \(privateCaFile\) \{([\s\S]*?)\n    \}/);
   assert.ok(registration, 'private CA registration must be scoped to the explicit deployment');
   assert.equal((main.match(/setCertificateVerifyProc/g) || []).length, 1);
   assert.match(registration[1], /origin: deploymentConfig\.origin/);
-  assert.match(registration[1], /certs\/cloudmeet-115-root\.crt/);
+  assert.match(main, /certs\/cloudmeet-115-root\.crt/);
+  assert.match(registration[1], /path.join\(__dirname, privateCaFile\)/);
   assert.match(registration[1], /verify\(request\)\.then\(callback, \(\) => callback\(-2\)\)/);
   const verifier = fs.readFileSync(require.resolve('../src/private-ca'), 'utf8');
   assert.match(verifier, /request\.hostname !== url\.hostname\) return -3/);

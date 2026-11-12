@@ -21,10 +21,10 @@ function unifiedXml(version, stage, action, appFiles, appDir = 'C:/app') {
   });
   let directoryId = 0;
   function render(node) {
-    return node.files.map(({ file, index, name }) => `<Component Id="App${index}" Guid="*" Win64="yes"><File Id="AppFile${index}" Name="${escape(name)}" Source="${escape(path.join(appDir, file))}" KeyPath="yes">${file === 'cloudmeet.exe' ? '<Shortcut Id="CloudMeetShortcut" Name="CloudMeet" Advertise="yes" Directory="ProgramMenuFolder" WorkingDirectory="CLOUDMEETROOT" />' : ''}</File></Component>`).join('\n')
+    return node.files.map(({ file, index, name }) => `<Component Id="App${index}" Guid="*" Win64="yes"><File Id="AppFile${index}" Name="${escape(name)}" Source="${escape(path.join(appDir, file))}" KeyPath="yes">${file === 'cloudmeet.exe' ? '<Shortcut Id="CloudMeetShortcut" Name="云会议" Advertise="yes" Directory="ProgramMenuFolder" WorkingDirectory="CLOUDMEETROOT" />' : ''}</File></Component>`).join('\n')
       + [...node.children].map(([name, child]) => `<Directory Id="AppDir${directoryId++}" Name="${escape(name)}">${render(child)}</Directory>`).join('\n');
   }
-  const appXml = render(tree).replace('WorkingDirectory="CLOUDMEETROOT" />', 'WorkingDirectory="CLOUDMEETROOT" /><Shortcut Id="CloudMeetDesktopShortcut" Name="CloudMeet" Advertise="yes" Directory="DesktopFolder" WorkingDirectory="CLOUDMEETROOT" />')
+  const appXml = render(tree).replace('WorkingDirectory="CLOUDMEETROOT" />', 'WorkingDirectory="CLOUDMEETROOT" /><Shortcut Id="CloudMeetDesktopShortcut" Name="云会议" Advertise="yes" Directory="DesktopFolder" WorkingDirectory="CLOUDMEETROOT" />')
     .replaceAll('WorkingDirectory="CLOUDMEETROOT"', 'Icon="CloudMeetIcon" IconIndex="0" WorkingDirectory="CLOUDMEETROOT"');
   let xml = runtimeXml(version, stage, action)
     .replace('Name="CloudMeet VPN Runtime"', 'Name="CloudMeet"')
@@ -57,7 +57,7 @@ function unifiedXml(version, stage, action, appFiles, appDir = 'C:/app') {
     .replace('A newer CloudMeet is already installed.', '已安装更新版本的 CloudMeet，无法安装此版本。')
     .replace('Uninstall the previous CloudMeet bundle and VPN runtime before installing this unified MSI.', '请先卸载旧版 CloudMeet 集成包及 VPN 运行时，再安装此集成包。')
     .replace('Uninstall the previous CloudMeet installer before installing the unified MSI.', '请先卸载旧版 CloudMeet，再安装此集成包。')
-    .replace('Name="Uninstall CloudMeet"', 'Name="卸载 CloudMeet"')
+    .replace('Name="Uninstall CloudMeet"', 'Name="卸载云会议"')
     .replace('Title="CloudMeet and VPN"', 'Title="CloudMeet 及 VPN"')
     .replace('</Product>', `<UI Id="CloudMeetProgressUI">
       <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
