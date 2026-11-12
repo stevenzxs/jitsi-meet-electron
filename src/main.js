@@ -1589,15 +1589,21 @@ if (!gotSingleInstanceLock) {
   app.whenReady().then(() => {
     // A bundled private authority applies only to this explicit deployment.
     // All other origins continue using Chromium's default certificate validation.
-    const privateCaFile = deploymentConfig.origin === 'https://115.190.243.21'
+    const trustFile = path.join(app.getAppPath(), 'client-trust.json');
+    const clientTrust = fs.existsSync(trustFile) ? JSON.parse(fs.readFileSync(trustFile, 'utf8')) : null;
+    if (clientTrust && clientTrust.origin !== deploymentConfig.origin) {
+      throw new Error('Packaged CA origin differs from active deployment configuration');
+    }
+    const privateCaFile = clientTrust ? null : deploymentConfig.origin === 'https://115.190.243.21'
       ? 'certs/cloudmeet-115-root.crt'
       : deploymentConfig.origin === 'https://47.110.84.166:8443'
         ? 'certs/cloudmeet-47-root.crt' : null;
-    if (privateCaFile) {
+    if (privateCaFile || clientTrust?.caFile) {
       const { createPrivateCaVerifier } = require('./private-ca');
       const verify = createPrivateCaVerifier({
         origin: deploymentConfig.origin,
-        ca: fs.readFileSync(path.join(__dirname, privateCaFile)),
+        ca: fs.readFileSync(clientTrust?.caFile
+          ? path.join(app.getAppPath(), 'client-ca.crt') : path.join(__dirname, privateCaFile)),
       });
       session.defaultSession.setCertificateVerifyProc((request, callback) => {
         verify(request).then(callback, () => callback(-2));
