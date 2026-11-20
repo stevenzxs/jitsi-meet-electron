@@ -68,7 +68,9 @@ $d=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${b64(path.join(
 Expand-Archive -LiteralPath $a -DestinationPath $d -Force
 $s=Get-AuthenticodeSignature -LiteralPath (Join-Path $d 'wintun\\bin\\amd64\\wintun.dll')
 if($s.Status -ne 'Valid' -or $s.SignerCertificate.Thumbprint -ne '${pin.signerThumbprint}'){throw 'Wintun signature invalid'}`;
-  await run(ps, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { timeout: 60000 });
+  // 剥离继承的 PSModulePath（pwsh 7 步骤注入的 PS7 模块路径会使 5.1 加载安全模块失败）。
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== 'psmodulepath'));
+  await run(ps, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { timeout: 60000, env });
   await fs.copyFile(path.join(output, 'wintun', 'wintun', 'bin', 'amd64', 'wintun.dll'), path.join(stage, 'wintun.dll'));
   await fs.copyFile(path.join(output, 'wintun', 'wintun', 'LICENSE.txt'), path.join(stage, 'WINTUN-LICENSE.txt'));
   const source = path.join(output, 'CloudMeetVPN.wxs');
