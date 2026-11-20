@@ -15,8 +15,12 @@ async function verifyPayload(metadata = payload) {
 $s=Get-AuthenticodeSignature -LiteralPath $p
 if($s.Status -ne 'Valid' -or $s.SignerCertificate.Thumbprint -ne '${metadata.signerThumbprint}'){throw 'Invalid OpenVPN signature'}
 Write-Output 'verified'`;
+  // pwsh 7 步骤会注入指向 PS7 模块目录的 PSModulePath；子进程 powershell.exe (5.1)
+  // 继承后会加载 Microsoft.PowerShell.Security 失败。剥离该变量（大小写不敏感），
+  // 让 5.1 自行计算默认模块路径。
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== 'psmodulepath'));
   const ps = path.win32.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  await run(ps, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { timeout: 60000, windowsHide: true });
+  await run(ps, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { timeout: 60000, windowsHide: true, env });
   return file;
 }
 function bundleXml({ version, vpnMsi, appMsi, license, theme = path.join(root, 'vendor/openvpn/installer-theme.xml') }) {
