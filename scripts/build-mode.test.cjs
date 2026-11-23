@@ -34,6 +34,21 @@ function loadForge(mode) {
   return module.exports;
 }
 
+test('native WiX shortcuts use the Chinese label without changing installation identity', async () => {
+  const maker = loadForge('release').makers.find(m => m.name === '@electron-forge/maker-wix');
+  assert.equal(maker.config.shortcutName, '云会议');
+  assert.equal(maker.config.name, 'CloudMeet');
+  assert.equal(maker.config.exe, 'cloudmeet');
+  assert.equal(maker.config.manufacturer, 'CloudMeet');
+  const { MSICreator } = require('electron-wix-msi');
+  const creator = new MSICreator({ ...maker.config, appDirectory: process.cwd(),
+    outputDirectory: os.tmpdir(), version: '1.0.36' });
+  await maker.config.beforeCreate(creator);
+  assert.equal(creator.shortcutName, '云会议');
+  assert.match(creator.wixTemplate, /<Product\b[^>]*Codepage="936"/);
+  assert.match(creator.wixTemplate, /<Package\b[^>]*SummaryCodepage="936"/);
+});
+
 test('Forge stamps only copied metadata and isolates debug output', async () => {
   const original = fs.readFileSync('package.json', 'utf8');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cloudmeet-build-mode-'));

@@ -52,6 +52,14 @@ module.exports = {
       platforms: ['win32'],
       config: {
         name: 'CloudMeet',
+        shortcutName: '云会议',
+        // WiX defaults to a Western code page even with language=2052.
+        // Set the MSI string pool code page before generating Chinese shortcuts.
+        beforeCreate: async creator => {
+          creator.wixTemplate = creator.wixTemplate
+            .replace(/<Product\b/, '<Product Codepage="936"')
+            .replace(/<Package\b/, '<Package SummaryCodepage="936"');
+        },
         manufacturer: 'CloudMeet',
         description: 'CloudMeet desktop meeting client',
         exe: 'cloudmeet',
