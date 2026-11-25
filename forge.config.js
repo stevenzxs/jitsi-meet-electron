@@ -64,6 +64,7 @@ module.exports = {
           creator.wixTemplate = creator.wixTemplate
             .replace(/<Product\b/, '<Product Codepage="936"')
             .replace(/<Package\b/, '<Package SummaryCodepage="936"');
+          await require('./scripts/uninstall-launcher.cjs').addUninstallLauncher(creator);
         },
         manufacturer: 'CloudMeet',
         description: 'CloudMeet desktop meeting client',

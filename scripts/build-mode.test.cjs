@@ -29,7 +29,8 @@ function loadForge(mode) {
     __dirname: path.resolve('.'), module, process: { env: { CLOUDMEET_BUILD_MODE: mode } },
     require: id => id === '@electron-forge/plugin-fuses' ? { FusesPlugin: class {} }
       : id === '@electron/fuses' ? { FuseV1Options: {}, FuseVersion: {} }
-        : id === './scripts/build-openvpn-bundle.cjs' ? {} : require(id),
+        : id === './scripts/build-openvpn-bundle.cjs' ? {}
+          : id === './scripts/uninstall-launcher.cjs' ? require('./uninstall-launcher.cjs') : require(id),
   });
   return module.exports;
 }
