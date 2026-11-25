@@ -49,6 +49,21 @@ test('native WiX shortcuts use the Chinese label without changing installation i
   assert.match(creator.wixTemplate, /<Package\b[^>]*SummaryCodepage="936"/);
 });
 
+test('native WiX keeps the established upgrade family across builds and versions', () => {
+  const { MSICreator } = require('electron-wix-msi');
+  const expected = 'CF24C64F-7B2E-43DE-92E9-581984AD2437';
+  // This is the desktop identity from the original unified MSI, not the VPN runtime.
+  const legacy = fs.readFileSync('scripts/unified-msi.cjs', 'utf8');
+  assert.ok(legacy.includes(`<Upgrade Id="${expected}">`));
+  for (const version of ['1.0.40', '1.0.41']) {
+    const maker = loadForge('release').makers.find(m => m.name === '@electron-forge/maker-wix');
+    assert.equal(maker.config.upgradeCode, expected);
+    const creator = new MSICreator({ ...maker.config, appDirectory: process.cwd(),
+      outputDirectory: os.tmpdir(), version });
+    assert.equal(creator.upgradeCode, expected);
+  }
+});
+
 test('Forge stamps only copied metadata and isolates debug output', async () => {
   const original = fs.readFileSync('package.json', 'utf8');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cloudmeet-build-mode-'));

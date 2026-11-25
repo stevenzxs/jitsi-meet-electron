@@ -52,6 +52,9 @@ module.exports = {
       platforms: ['win32'],
       config: {
         name: 'CloudMeet',
+        // Keep the desktop upgrade family stable; omission makes each build a
+        // separate product family in electron-wix-msi. Reuse the unified MSI ID.
+        upgradeCode: 'CF24C64F-7B2E-43DE-92E9-581984AD2437',
         shortcutName: '云会议',
         // WiX defaults to a Western code page even with language=2052.
         // Set the MSI string pool code page before generating Chinese shortcuts.
