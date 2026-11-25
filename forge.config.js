@@ -51,7 +51,9 @@ module.exports = {
       name: '@electron-forge/maker-wix',
       platforms: ['win32'],
       config: {
-        name: 'CloudMeet',
+        name: '云会议',
+        // Localize display names without changing registry/install identifiers.
+        shortName: 'CloudMeet',
         // Keep the desktop upgrade family stable; omission makes each build a
         // separate product family in electron-wix-msi. Reuse the unified MSI ID.
         upgradeCode: 'CF24C64F-7B2E-43DE-92E9-581984AD2437',

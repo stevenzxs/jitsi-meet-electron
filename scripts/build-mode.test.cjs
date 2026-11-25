@@ -37,7 +37,8 @@ function loadForge(mode) {
 test('native WiX shortcuts use the Chinese label without changing installation identity', async () => {
   const maker = loadForge('release').makers.find(m => m.name === '@electron-forge/maker-wix');
   assert.equal(maker.config.shortcutName, '云会议');
-  assert.equal(maker.config.name, 'CloudMeet');
+  assert.equal(maker.config.name, '云会议');
+  assert.equal(maker.config.shortName, 'CloudMeet');
   assert.equal(maker.config.exe, 'cloudmeet');
   assert.equal(maker.config.manufacturer, 'CloudMeet');
   const { MSICreator } = require('electron-wix-msi');
@@ -45,6 +46,8 @@ test('native WiX shortcuts use the Chinese label without changing installation i
     outputDirectory: os.tmpdir(), version: '1.0.36' });
   await maker.config.beforeCreate(creator);
   assert.equal(creator.shortcutName, '云会议');
+  assert.equal(creator.name, '云会议');
+  assert.equal(creator.shortName, 'CloudMeet');
   assert.match(creator.wixTemplate, /<Product\b[^>]*Codepage="936"/);
   assert.match(creator.wixTemplate, /<Package\b[^>]*SummaryCodepage="936"/);
 });
